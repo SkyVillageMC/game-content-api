@@ -1,0 +1,45 @@
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+generator db {
+    provider = "go run github.com/prisma/prisma-client-go"
+    package  = "db"
+}
+
+model Server {
+    id                   String            @id @default(cuid())
+    terminal             Boolean           @default(false)
+    compressionThreshold Int               @default(0)
+    map                  Map               @relation(fields: [mapId], references: [id])
+    mapId                String
+    brand                String            @default("SkyVillage")
+    extensions           ServerExtension[]
+}
+
+model ServerExtension {
+    server   Server @relation(fields: [serverId], references: [id])
+    serverId String
+
+    extension   Extension @relation(fields: [extensionId], references: [id])
+    extensionId String
+
+    @@id([serverId, extensionId])
+}
+
+model Extension {
+    id          String            @id @default(cuid())
+    name        String
+    tag         String
+    description String
+    servers     ServerExtension[]
+}
+
+model Map {
+    id          String   @id @default(cuid())
+    name        String
+    tag         String
+    description String
+    Server      Server[]
+}
